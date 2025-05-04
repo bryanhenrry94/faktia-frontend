@@ -38,11 +38,15 @@ const LoginPage: React.FC = () => {
       if (!subdomain) return;
 
       const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${subdomain}.${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/login`;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/login`;
 
-      const response = await axios.post(backendUrl, data, {
-        withCredentials: true,
-      });
+      const headers = {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Tenant-Subdomain": subdomain,
+      };
+
+      const response = await axios.post(backendUrl, data, { headers });
 
       if (!response.status || response.status !== 200) {
         throw new Error("Credenciales incorrectas");
