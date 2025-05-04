@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const LOCAL_DOMAINS = [
-  "app.localhost:3000",
+  "faktia.lat",
+  "app.faktia.lat",
   "tenant1.localhost:3000",
   "tenant2.localhost:3000",
 ];
@@ -35,7 +36,7 @@ export function middleware(req: NextRequest) {
 
   // Validar subdominios conocidos (solo en local)
   if (!LOCAL_DOMAINS.includes(host)) {
-    return NextResponse.redirect(new URL("http://app.localhost:3000"));
+    return NextResponse.redirect(new URL("http://app.faktia.lat"));
   }
 
   return NextResponse.next();
