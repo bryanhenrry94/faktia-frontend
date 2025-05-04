@@ -14,36 +14,35 @@ export default function TenantPage() {
   const params = useParams();
   const [users, setUsers] = React.useState<User[]>([]);
 
-  React.useEffect(() => {
-    if (!params.id) {
-      return;
-    }
-
-    if (typeof params.id === "string") {
-      fetchTenantData(params.id);
-      fetchUsersByTenant(params.id);
-    }
-  }, [params.id]);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<TenantFormInputs>();
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   };
 
-  const fetchTenantData = async (tenantId: string) => {
-    try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
-      const response = await axios.get(backendUrl);
+  const fetchTenantData = React.useCallback(
+    async (tenantId: string) => {
+      try {
+        const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
+        const response = await axios.get(backendUrl);
 
-      console.log("Tenant data: ", response.data);
-      setValue("name", response.data.name);
-      setValue("subdomain", response.data.subdomain);
-      setValue("email", response.data.email);
-      setValue("plan", response.data.plan);
-    } catch (error) {
-      console.error("Error fetching tenant data: ", error);
-      toast.error("Error fetching tenant data");
-    }
-  };
+        console.log("Tenant data: ", response.data);
+        setValue("name", response.data.name);
+        setValue("subdomain", response.data.subdomain);
+        setValue("email", response.data.email);
+        setValue("plan", response.data.plan);
+      } catch (error) {
+        console.error("Error fetching tenant data: ", error);
+        toast.error("Error fetching tenant data");
+      }
+    },
+    [setValue]
+  );
 
   const fetchUsersByTenant = async (tenantId: string) => {
     try {
@@ -56,12 +55,16 @@ export default function TenantPage() {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<TenantFormInputs>();
+  React.useEffect(() => {
+    if (!params.id) {
+      return;
+    }
+
+    if (typeof params.id === "string") {
+      fetchTenantData(params.id);
+      fetchUsersByTenant(params.id);
+    }
+  }, [params.id, fetchTenantData]);
 
   const handleError = useAxiosErrorHandler({
     display: "toast", // o "toast" o "console"

@@ -9,7 +9,6 @@ const LOCAL_DOMAINS = [
 const AUTH_TOKEN = process.env.AUTH_TOKEN_COOKIE_NAME || "auth_token_faktia";
 
 export function middleware(req: NextRequest) {
-  const url = req.nextUrl.clone();
   const host = req.headers.get("host") || "";
   const subdomain = host.split(".")[0]; // app, tenant1, tenant2
 
@@ -22,7 +21,6 @@ export function middleware(req: NextRequest) {
   );
 
   const token = req.cookies.get(AUTH_TOKEN)?.value;
-  // console.log("🔑 Token de autenticación:", token);
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/login", req.url));

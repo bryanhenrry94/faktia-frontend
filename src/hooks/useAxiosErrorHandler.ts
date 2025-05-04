@@ -43,7 +43,8 @@ export const useAxiosErrorHandler = (options?: UseAxiosErrorHandlerOptions) => {
         const axiosError = error as AxiosError;
 
         status = axiosError.response?.status;
-        const apiMessage = axiosError.response?.data?.message;
+        const apiMessage = (axiosError.response?.data as { message?: string })
+          ?.message;
 
         message = apiMessage || getMessageFromStatus(status);
 

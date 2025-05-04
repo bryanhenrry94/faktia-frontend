@@ -15,17 +15,14 @@ export default function TenantPage() {
   const params = useParams();
   const [tenants, setTenants] = React.useState<Tenant[]>([]);
 
-  React.useEffect(() => {
-    if (!params.id) {
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<UserFormInputs>();
 
-    if (typeof params.id === "string") {
-      fetchUserData(params.id);
-    }
-  }, [params.id]);
-
-  const fetchTenants = async () => {
+  const fetchTenants = React.useCallback(async () => {
     try {
       const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
 
@@ -37,38 +34,44 @@ export default function TenantPage() {
     } catch (error) {
       console.error("Error fetching tenants:", error);
     }
-  };
+  }, []);
+
+  const fetchUserData = React.useCallback(
+    async (userId: string) => {
+      try {
+        const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${userId}`;
+        const response = await axios.get(backendUrl);
+
+        console.log("User data: ", response.data);
+        setValue("name", response.data.name);
+        setValue("email", response.data.email);
+        setValue("role", response.data.role);
+        setValue("tenantId", response.data.tenantId);
+      } catch (error) {
+        console.error("Error fetching tenant data: ", error);
+        toast.error("Error fetching tenant data");
+      }
+    },
+    [setValue]
+  );
+
+  React.useEffect(() => {
+    if (!params.id) {
+      return;
+    }
+
+    if (typeof params.id === "string") {
+      fetchUserData(params.id);
+    }
+  }, [params.id, fetchUserData]);
 
   React.useEffect(() => {
     fetchTenants();
-  }, []);
+  }, [fetchTenants]);
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   };
-
-  const fetchUserData = async (userId: string) => {
-    try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${userId}`;
-      const response = await axios.get(backendUrl);
-
-      console.log("User data: ", response.data);
-      setValue("name", response.data.name);
-      setValue("email", response.data.email);
-      setValue("role", response.data.role);
-      setValue("tenantId", response.data.tenantId);
-    } catch (error) {
-      console.error("Error fetching tenant data: ", error);
-      toast.error("Error fetching tenant data");
-    }
-  };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<UserFormInputs>();
 
   const handleError = useAxiosErrorHandler({
     display: "toast", // o "toast" o "console"
