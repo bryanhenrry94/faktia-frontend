@@ -21,7 +21,7 @@ export default function UserPage() {
   const fetchTenants = async () => {
     try {
       const protocol = window.location.protocol;
-      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
 
       const response = await axios.get(backendUrl);
 
@@ -45,7 +45,7 @@ export default function UserPage() {
   const onSubmit = async (data: UserFormInputs) => {
     try {
       const protocol = window.location.protocol;
-      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user`;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user`;
 
       const response = await axios.post(backendUrl, data);
       console.log("response: ", response);
