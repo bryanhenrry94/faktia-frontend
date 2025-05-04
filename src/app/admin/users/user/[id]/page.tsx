@@ -24,7 +24,8 @@ export default function TenantPage() {
 
   const fetchTenants = React.useCallback(async () => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
 
       const response = await axios.get(backendUrl);
 
@@ -39,7 +40,8 @@ export default function TenantPage() {
   const fetchUserData = React.useCallback(
     async (userId: string) => {
       try {
-        const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${userId}`;
+        const protocol = window.location.protocol;
+        const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${userId}`;
         const response = await axios.get(backendUrl);
 
         console.log("User data: ", response.data);
@@ -80,7 +82,8 @@ export default function TenantPage() {
 
   const onSubmit = async (data: UserFormInputs) => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${params.id}`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/${params.id}`;
 
       const response = await axios.patch(backendUrl, data);
       console.log("response: ", response);

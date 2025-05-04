@@ -37,7 +37,8 @@ const LoginPage: React.FC = () => {
     try {
       if (!subdomain) return;
 
-      const backendUrl = `http://${subdomain}.${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/login`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}//${subdomain}.${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/login`;
 
       const response = await axios.post(backendUrl, data, {
         withCredentials: true,

@@ -25,7 +25,8 @@ const TenantsPage = () => {
 
   const fetchTenants = async () => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
 
       const response = await axios.get(backendUrl);
 

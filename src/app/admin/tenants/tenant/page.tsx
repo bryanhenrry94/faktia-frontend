@@ -24,7 +24,8 @@ export default function TenantPage() {
 
   const onSubmit = async (data: TenantFormInputs) => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
 
       const response = await axios.post(backendUrl, data);
       console.log("response: ", response);

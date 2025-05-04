@@ -28,7 +28,8 @@ export default function TenantPage() {
   const fetchTenantData = React.useCallback(
     async (tenantId: string) => {
       try {
-        const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
+        const protocol = window.location.protocol;
+        const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
         const response = await axios.get(backendUrl);
 
         console.log("Tenant data: ", response.data);
@@ -46,7 +47,8 @@ export default function TenantPage() {
 
   const fetchUsersByTenant = async (tenantId: string) => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/tenant/${tenantId}`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/tenant/${tenantId}`;
       const response = await axios.get(backendUrl);
       setUsers(response.data);
     } catch (error) {
@@ -73,7 +75,8 @@ export default function TenantPage() {
 
   const onSubmit = async (data: TenantFormInputs) => {
     try {
-      const backendUrl = `http://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${params.id}`;
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}://${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${params.id}`;
 
       const response = await axios.patch(backendUrl, data);
       console.log("response: ", response);
