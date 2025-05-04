@@ -27,16 +27,21 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Redireccionar a subdominio app.localhost si se visita localhost directamente
-  if (host === "localhost:3000") {
+  // Redireccionar a subdominio app.localhost si se visita localhost directamente (solo en local)
+  if (process.env.NODE_ENV === "development" && host === "localhost:3000") {
     return NextResponse.redirect(
       new URL(req.url.toString().replace("localhost", "app.localhost"))
     );
   }
 
-  // Validar subdominios conocidos (solo en local)
-  if (!LOCAL_DOMAINS.includes(host)) {
-    return NextResponse.redirect(new URL("http://app.faktia.lat"));
+  // Validar subdominios conocidos
+  if (process.env.NODE_ENV === "development" && !LOCAL_DOMAINS.includes(host)) {
+    return NextResponse.redirect(new URL("http://app.localhost:3000"));
+  } else if (
+    process.env.NODE_ENV === "production" &&
+    host !== "app.faktia.lat"
+  ) {
+    return NextResponse.redirect(new URL("https://app.faktia.lat"));
   }
 
   return NextResponse.next();
