@@ -62,7 +62,12 @@ const LoginPage: React.FC = () => {
       } else {
         console.error("No token received");
       }
-      router.push("/admin");
+
+      if (subdomain === "app") {
+        router.push("/admin");
+      } else {
+        router.push("/secure");
+      }
     } catch (error) {
       handleError(error);
     }

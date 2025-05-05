@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { Tenant } from "@/types";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const TenantsPage = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -25,7 +26,7 @@ const TenantsPage = () => {
 
   const fetchTenants = async () => {
     try {
-      const protocol = window.location.protocol;      
+      const protocol = window.location.protocol;
       const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
       const response = await axios.get(backendUrl);
 
@@ -56,6 +57,7 @@ const TenantsPage = () => {
             <th className="px-4 py-2 text-left">Usuarios</th>
             <th className="px-4 py-2 text-left">Estado</th>
             <th className="px-4 py-2 text-left">Creado</th>
+            <th className="px-4 py-2 text-left">Web</th>
             <th className="px-4 py-2 text-left">Accion</th>
           </tr>
         </thead>
@@ -87,6 +89,20 @@ const TenantsPage = () => {
                   second: "2-digit",
                   hour12: false,
                 }).format(new Date(tenant.createdAt))}
+              </td>
+              <td className="px-4 py-2">
+                <div className="relative group">
+                  <Link
+                    href={`${window.location.protocol}//${tenant.subdomain}.${process.env.NEXT_PUBLIC_BASE_DOMAIN}/login`}
+                    className="text-teal-600 hover:underline"
+                    target="_blank"
+                  >
+                    Url
+                  </Link>
+                  <div className="absolute left-0 mt-1 hidden w-max rounded-md bg-gray-800 px-2 py-1 text-xs text-white shadow-md group-hover:block">
+                    {`${window.location.protocol}//${tenant.subdomain}.${process.env.NEXT_PUBLIC_BASE_DOMAIN}/login`}
+                  </div>
+                </div>
               </td>
               <td className="px-4 py-2">
                 <button
