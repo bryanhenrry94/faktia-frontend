@@ -103,12 +103,29 @@ export default function TenantPage() {
       const response = await axios.delete(backendUrl);
       console.log("response: ", response);
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 204) {
         setMemberships((prev) =>
           prev.filter((membership) => membership.id !== membershipId)
         );
         toast.success("Usuario eliminado con éxito");
         fetchMembershipsByTenant();
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  const handleResentInvitation = async (membershipId: string) => {
+    try {
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/memberships/resend-invite/`;
+      const response = await axios.post(backendUrl, {
+        invitation: membershipId,
+      });
+      console.log("response: ", response);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Invitacion reenviada con éxito");
       }
     } catch (error) {
       handleError(error);
@@ -474,8 +491,11 @@ export default function TenantPage() {
                   >
                     Estado
                   </th>
-                  <th scope="col" className="relative px-6 py-3">
-                    <span className="sr-only">Acción</span>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Acción
                   </th>
                 </tr>
               </thead>
@@ -494,26 +514,53 @@ export default function TenantPage() {
                         {membership.status}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleDeleteInvitation(membership.id)}
-                          className={`flex items-center justify-center w-8 h-8 rounded-full bg-red-100 hover:bg-red-200`}
-                          title="Eliminar"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 text-red-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={2}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() =>
+                              handleResentInvitation(membership.id)
+                            }
+                            className={`flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200`}
+                            title="Reenviar invitación"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-gray-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16 12H8m0 0l4-4m-4 4l4 4"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeleteInvitation(membership.id)
+                            }
+                            className={`flex items-center justify-center w-8 h-8 rounded-full bg-red-100 hover:bg-red-200`}
+                            title="Eliminar"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5 text-red-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

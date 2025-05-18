@@ -5,7 +5,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify"; // si usas toast
 import { useAxiosErrorHandler } from "@/hooks/useAxiosErrorHandler";
-import { UserFormInputs, Tenant } from "@/types";
+import { UserFormInputs } from "@/types";
 import { useRouter, useParams } from "next/navigation";
 import ChangePasswordForm from "@/components/forms/ChangePasswordForm";
 
@@ -13,7 +13,6 @@ export default function TenantPage() {
   const [activeTab, setActiveTab] = React.useState("general");
   const router = useRouter();
   const params = useParams();
-  const [tenants, setTenants] = React.useState<Tenant[]>([]);
 
   const {
     register,
@@ -21,21 +20,6 @@ export default function TenantPage() {
     formState: { errors },
     setValue,
   } = useForm<UserFormInputs>();
-
-  const fetchTenants = React.useCallback(async () => {
-    try {
-      const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant`;
-
-      const response = await axios.get(backendUrl);
-
-      if (response.status === 200) {
-        setTenants(response.data);
-      }
-    } catch (error) {
-      console.error("Error fetching tenants:", error);
-    }
-  }, []);
 
   const fetchUserData = React.useCallback(
     async (userId: string) => {
@@ -47,8 +31,7 @@ export default function TenantPage() {
         console.log("User data: ", response.data);
         setValue("name", response.data.name);
         setValue("email", response.data.email);
-        setValue("role", response.data.role);
-        setValue("tenantId", response.data.tenantId);
+        setValue("status", response.data.status);
       } catch (error) {
         console.error("Error fetching tenant data: ", error);
         toast.error("Error fetching tenant data");
@@ -66,10 +49,6 @@ export default function TenantPage() {
       fetchUserData(params.id);
     }
   }, [params.id, fetchUserData]);
-
-  React.useEffect(() => {
-    fetchTenants();
-  }, [fetchTenants]);
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -225,71 +204,30 @@ export default function TenantPage() {
                     </div>
                     <div>
                       <label
-                        htmlFor="role"
+                        htmlFor="status"
                         className="block text-sm/6 font-medium text-gray-900"
                       >
-                        Rol
+                        Estado
                       </label>
                       <div className="mt-2">
                         <select
-                          id="role"
+                          id="status"
                           className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                            errors.role ? "border-red-500" : "border-gray-300"
+                            errors.status ? "border-red-500" : "border-gray-300"
                           }`}
-                          {...register("role", {
+                          {...register("status", {
                             required: "El rol es obligatorio",
                           })}
                         >
-                          <option value="">Selecciona un rol</option>
-                          <option value="user">Usuario</option>
-                          <option value="admin">Administrador</option>
+                          <option value="active">Activo</option>
+                          <option value="inactive">Inactivo</option>
                         </select>
-                        {errors.role && (
+                        {errors.status && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.role.message}
+                            {errors.status.message}
                           </p>
                         )}
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                  <div className="pb-2">
-                    <h3 className="text-lg font-bold">
-                      Información de Contacto
-                    </h3>
-                    <h3 className="text-sm font-normal text-gray-500">
-                      Información del tenant
-                    </h3>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="tenantId"
-                      className="block text-sm/6 font-medium text-gray-900"
-                    >
-                      Tenant
-                    </label>
-                    <div className="mt-2">
-                      <select
-                        id="tenantId"
-                        className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                          errors.tenantId ? "border-red-500" : "border-gray-300"
-                        }`}
-                        {...register("tenantId", {
-                          required: "El tenant es obligatorio",
-                        })}
-                      >
-                        {tenants.map((tenant) => (
-                          <option key={tenant.id} value={tenant.id}>
-                            {tenant.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.tenantId && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.tenantId.message}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>

@@ -163,28 +163,27 @@ export default function UserPage() {
                 </div>
                 <div>
                   <label
-                    htmlFor="role"
+                    htmlFor="status"
                     className="block text-sm/6 font-medium text-gray-900"
                   >
-                    Rol
+                    Estado
                   </label>
                   <div className="mt-2">
                     <select
-                      id="role"
+                      id="status"
                       className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                        errors.role ? "border-red-500" : "border-gray-300"
+                        errors.status ? "border-red-500" : "border-gray-300"
                       }`}
-                      {...register("role", {
-                        required: "El rol es obligatorio",
+                      {...register("status", {
+                        required: "El estado es obligatorio",
                       })}
                     >
-                      <option value="">Selecciona un rol</option>
-                      <option value="user">Usuario</option>
-                      <option value="admin">Administrador</option>
+                      <option value="activo">Activo</option>
+                      <option value="inactive">Inactivo</option>
                     </select>
-                    {errors.role && (
+                    {errors.status && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.role.message}
+                        {errors.status.message}
                       </p>
                     )}
                   </div>

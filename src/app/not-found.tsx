@@ -17,12 +17,12 @@ export default function NotFoundPage() {
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
             <a
-              href="/admin"
+              href="/login"
               className="rounded-md bg-teal-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
             >
               Volver a inicio
             </a>
-            <a href="/admin" className="text-sm font-semibold text-gray-900">
+            <a href="/login" className="text-sm font-semibold text-gray-900">
               Contactar soporte <span aria-hidden="true">&rarr;</span>
             </a>
           </div>

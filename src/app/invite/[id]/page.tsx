@@ -88,7 +88,7 @@ const InvitePage: React.FC = () => {
 
       // Simulate API call to accept the invitation
       await axios.post(backendUrl, { invitation: id });
-      toast.success("Invitación aceptada con éxito");
+      toast.success("Invitación rechazada con éxito");
       router.push("/login");
     } catch (error) {
       handleError(error);

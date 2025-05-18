@@ -5,9 +5,7 @@ export type User = {
   name: string;
   email: string;
   password: string;
-  role: string;
   status: string;
-  lastLogin: Date;
   tenantId: string;
   tenant: Tenant;
   createdAt: Date;
@@ -17,7 +15,6 @@ export type UserFormInputs = {
   name: string;
   email: string;
   password: string;
-  role: string;
   status: string;
   tenantId: string;
 };

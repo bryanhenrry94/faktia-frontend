@@ -14,12 +14,13 @@ const UsersPage = () => {
     setActiveTab(tab);
   };
 
-  const filteredTenants = rows.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTenants = rows.filter(
+    (user) =>
+      user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      !user?.name
   );
 
   const handleRefresh = () => {
-    // Implement refresh logic here
     fetchData();
   };
 
@@ -53,9 +54,7 @@ const UsersPage = () => {
           <tr>
             <th className="px-4 py-2 text-left">Nombre</th>
             <th className="px-4 py-2 text-left">Email</th>
-            <th className="px-4 py-2 text-left">Role</th>
             <th className="px-4 py-2 text-left">Estado</th>
-            <th className="px-4 py-2 text-left">Tenant</th>
             <th className="px-4 py-2 text-left">Creado</th>
             <th className="px-4 py-2 text-left">Accion</th>
           </tr>
@@ -65,19 +64,36 @@ const UsersPage = () => {
             <tr key={user.id}>
               <td className="px-4 py-2">{user.name}</td>
               <td className="px-4 py-2">{user.email}</td>
-              <td className="px-4 py-2">{user.role}</td>
               <td className="px-4 py-2">
                 <span
-                  className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     user.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-green-100 text-green-800 border border-green-300"
+                      : "bg-red-100 text-red-800 border border-red-300"
                   }`}
                 >
+                  {user.status === "active" ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13H7v-2h10v2z" />
+                    </svg>
+                  )}
                   {user.status}
                 </span>
               </td>
-              <td className="px-4 py-2">{user.tenant.name}</td>
               <td className="px-4 py-2">
                 {new Intl.DateTimeFormat("es-ES", {
                   day: "2-digit",
