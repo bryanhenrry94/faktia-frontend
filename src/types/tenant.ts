@@ -1,10 +1,10 @@
 export type Tenant = {
-  id: number;
+  id: string;
   name: string;
   status: string;
   plan: string;
   email: string;
-  users: [];
+  memberships: [];
   subdomain: string;
   createdAt: string;
 };

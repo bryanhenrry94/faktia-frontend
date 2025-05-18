@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSubdomain } from "@/hooks/useSubdomain";
 import { useForm } from "react-hook-form";
+import dayjs from "dayjs";
 
 const ElectronicInvoicingConfigForm = () => {
   const subdomain = useSubdomain();
@@ -18,6 +19,7 @@ const ElectronicInvoicingConfigForm = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<ElectronicInvoicingConfigFormInput>();
 
   const handleError = useAxiosErrorHandler({
@@ -90,7 +92,11 @@ const ElectronicInvoicingConfigForm = () => {
 
       setValue("digitalCertificate", response.data.digitalCertificate);
       setValue("certificatePassword", response.data.certificatePassword);
-      setValue("certificateExpiryDate", response.data.certificateExpiryDate);
+
+      setValue(
+        "certificateExpiryDate",
+        dayjs(response.data.certificateExpiryDate).toDate()
+      );
       setValue("issuancePoints", response.data.issuancePoints);
     } catch (error) {
       console.error("Error fetching tenant data: ", error);
@@ -139,8 +145,10 @@ const ElectronicInvoicingConfigForm = () => {
               </button>
               <input
                 id="digitalCertificate"
-                type="text"
+                type="file"
                 autoComplete="off"
+                placeholder="Firma Electrónica"
+                lang="es"
                 className={`block flex-1  rounded-md bg-gray-50 px-4 py-2 text-base text-gray-800 border ${
                   errors.digitalCertificate
                     ? "border-red-500 focus:outline-red-500"
@@ -164,6 +172,7 @@ const ElectronicInvoicingConfigForm = () => {
             >
               Fecha Exp. Firma Electrónica:
             </label>
+            {dayjs(watch("certificateExpiryDate")).format("DD/MM/YYYY")}
             <div className="mt-2">
               <input
                 id="certificateExpiryDate"

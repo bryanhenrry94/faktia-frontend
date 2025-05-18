@@ -5,14 +5,17 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify"; // si usas toast
 import { useAxiosErrorHandler } from "@/hooks/useAxiosErrorHandler";
-import { TenantFormInputs, User } from "@/types";
+import { Tenant, TenantFormInputs } from "@/types";
 import { useRouter, useParams } from "next/navigation";
+import { Membership } from "@/types/memberships";
+import InvitacionForm from "@/components/forms/InvitacionForm";
 
 export default function TenantPage() {
   const [activeTab, setActiveTab] = React.useState("general");
   const router = useRouter();
   const params = useParams();
-  const [users, setUsers] = React.useState<User[]>([]);
+  const [tenant, setTenant] = React.useState<Tenant | null>(null);
+  const [memberships, setMemberships] = React.useState<Membership[]>([]);
 
   const {
     register,
@@ -33,6 +36,8 @@ export default function TenantPage() {
         const response = await axios.get(backendUrl);
 
         console.log("Tenant data: ", response.data);
+        setTenant(response.data);
+
         setValue("name", response.data.name);
         setValue("subdomain", response.data.subdomain);
         setValue("email", response.data.email);
@@ -45,17 +50,17 @@ export default function TenantPage() {
     [setValue]
   );
 
-  const fetchUsersByTenant = async (tenantId: string) => {
+  const fetchMembershipsByTenant = React.useCallback(async () => {
     try {
       const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/user/tenant/${tenantId}`;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/memberships/tenant/${params.id}`;
       const response = await axios.get(backendUrl);
-      setUsers(response.data);
+      setMemberships(response.data);
     } catch (error) {
-      console.error("Error fetching fetchUsersByTenant: ", error);
+      console.error("Error fetching fetchMembershipsByTenant: ", error);
       toast.error("Error al obtener los usuarios por tenant");
     }
-  };
+  }, [params.id]);
 
   React.useEffect(() => {
     if (!params.id) {
@@ -64,9 +69,9 @@ export default function TenantPage() {
 
     if (typeof params.id === "string") {
       fetchTenantData(params.id);
-      fetchUsersByTenant(params.id);
+      fetchMembershipsByTenant();
     }
-  }, [params.id, fetchTenantData]);
+  }, [params.id, fetchTenantData, fetchMembershipsByTenant]);
 
   const handleError = useAxiosErrorHandler({
     display: "toast", // o "toast" o "console"
@@ -91,13 +96,30 @@ export default function TenantPage() {
     }
   };
 
+  const handleDeleteInvitation = async (membershipId: string) => {
+    try {
+      const protocol = window.location.protocol;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/memberships/${membershipId}`;
+      const response = await axios.delete(backendUrl);
+      console.log("response: ", response);
+
+      if (response.status === 200) {
+        setMemberships((prev) =>
+          prev.filter((membership) => membership.id !== membershipId)
+        );
+        toast.success("Usuario eliminado con éxito");
+        fetchMembershipsByTenant();
+      }
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return (
     <>
       <div className="lg:flex lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1">
-          <h2 className="text-2xl/7 font-bold text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-            Editar Tenant
-          </h2>
+          <h2 className="text-2xl font-bold">Editar Tenant</h2>
           <p className="mt-1 text-sm/6 text-gray-500">
             Edita la información del tenant.
           </p>
@@ -144,7 +166,7 @@ export default function TenantPage() {
                 aria-selected="false"
                 onClick={() => handleTabClick("users")}
               >
-                Usuarios
+                Miembros
               </button>
             </li>
             <li className="me-2" role="presentation">
@@ -323,55 +345,180 @@ export default function TenantPage() {
         )}
         {activeTab === "users" && (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {users &&
-                users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex flex-col items-center justify-center py-10 border border-gray-200 bg-white p-4 shadow-sm rounded-lg transition-transform transform hover:scale-105"
-                    onClick={() => {
-                      router.push(`/admin/users/user/${user.id}`);
-                    }}
-                  >
+            <div className="mb-8 rounded-lg shadow-md bg-white">
+              <div className="p-4">
+                <div className="flex items-center gap-2 text-lg font-bold">
+                  <span className="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 text-gray-600"
+                      fill="none"
                       viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="h-15 w-15 mb-2 text-gray-200"
+                      stroke="currentColor"
+                      strokeWidth={2}
                     >
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
-                    <p className="mt-2 text-lg font-bold text-gray-500 text-center">
-                      {user.name}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-500 text-center">
-                      {user.email}
-                    </p>
-                    <span className="mt-2 inline-block rounded-full bg-teal-100 px-3 py-1 text-sm font-semibold text-teal-600 text-center">
-                      {user.role}
-                    </span>
-                  </div>
-                ))}
-
-              <div
-                className="flex flex-col items-center justify-center py-10 border border-dashed border-gray-100 bg-white p-4 shadow-sm rounded-lg transition-transform transform hover:scale-105"
-                onClick={() => {
-                  router.push("/admin/users/user");
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  className="h-15 w-15 mb-2 text-gray-200"
-                >
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-                <p className="mt-2 text-sm text-gray-500 text-center">
-                  Agrega nuevo usuarios.
+                  </span>
+                  Invitar Usuarios
+                </div>
+                <p className="text-sm text-gray-500">
+                  Invita a nuevos miembros a unirse a tu organización. Tienes un
+                  límite de usuarios.
                 </p>
               </div>
+              <div className="p-4">
+                <InvitacionForm
+                  subdomain={tenant?.subdomain || ""}
+                  data={memberships}
+                  refreshData={fetchMembershipsByTenant}
+                />
+              </div>
+              <div className="p-4 bg-gray-50 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16 12H8m0 0l4-4m-4 4l4 4"
+                    />
+                  </svg>
+                  Se enviará un correo electrónico con un enlace para aceptar la
+                  invitación.
+                </div>
+              </div>
             </div>
+            <h2 className="text-xl font-semibold mb-4">Usuarios Activos</h2>
+            <table className="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Correo Electrónico
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Nombre
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Rol
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Estado
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {memberships
+                  .filter((q) => q.status === "accepted")
+                  .map((membership) => (
+                    <tr key={membership.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {membership.user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {membership.user.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {membership.role}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {membership.status}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            <h2 className="text-xl font-semibold mb-4 mt-8">
+              Invitaciones Pendientes
+            </h2>
+            <table className="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Correo Electrónico
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Rol
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-sm font-medium text-gray-500 tracking-wider"
+                  >
+                    Estado
+                  </th>
+                  <th scope="col" className="relative px-6 py-3">
+                    <span className="sr-only">Acción</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {memberships
+                  .filter((q) => q.status === "pending")
+                  .map((membership) => (
+                    <tr key={membership.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {membership.user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {membership.role}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {membership.status}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleDeleteInvitation(membership.id)}
+                          className={`flex items-center justify-center w-8 h-8 rounded-full bg-red-100 hover:bg-red-200`}
+                          title="Eliminar"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-red-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </>
         )}
         {activeTab === "invoices" && (

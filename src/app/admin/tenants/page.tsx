@@ -3,7 +3,9 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { Tenant } from "@/types";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 import Link from "next/link";
+import { toast } from "react-toastify"; // si usas toast
 
 const TenantsPage = () => {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -46,6 +48,36 @@ const TenantsPage = () => {
     router.push("/admin/tenants/tenant");
   };
 
+  const handleEditTenant = (tenant: Tenant) => {
+    router.push(`/admin/tenants/tenant/${tenant.id}`);
+  };
+
+  const handleDeleteTenant = async (tenant: Tenant) => {
+    Swal.fire({
+      title: `¿Deseas eliminar el tenant ${tenant.name}?`,
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#008080",
+      cancelButtonColor: "#E48F8B",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const protocol = window.location.protocol;
+          const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenant.id}`;
+          await axios.delete(backendUrl);
+          toast.success("Tenant eliminado correctamente");
+          fetchTenants(); // Refresh the tenants list
+        } catch (error) {
+          console.error("Error deleting tenant:", error);
+          toast.error("No se pudo eliminar el tenant");
+        }
+      }
+    });
+  };
+
   const TableTenants = ({ data }: { data: Tenant[] }) => {
     return (
       <table className="table-auto w-full text-sm rounded-lg">
@@ -54,7 +86,6 @@ const TenantsPage = () => {
             <th className="px-4 py-2 text-left">Nombre</th>
             <th className="px-4 py-2 text-left">Subdominio</th>
             <th className="px-4 py-2 text-left">Plan</th>
-            <th className="px-4 py-2 text-left">Usuarios</th>
             <th className="px-4 py-2 text-left">Estado</th>
             <th className="px-4 py-2 text-left">Creado</th>
             <th className="px-4 py-2 text-left">Web</th>
@@ -67,12 +98,11 @@ const TenantsPage = () => {
               <td className="px-4 py-2">{tenant.name}</td>
               <td className="px-4 py-2">{tenant.subdomain}</td>
               <td className="px-4 py-2">{tenant.plan}</td>
-              <td className="px-4 py-2">{tenant.users.length}</td>
               <td className="px-4 py-2">
                 <span
                   className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
                     tenant.status === "active"
-                      ? "bg-green-100 text-green-800"
+                      ? "bg-teal-100 text-teal-800"
                       : "bg-red-100 text-red-800"
                   }`}
                 >
@@ -105,14 +135,53 @@ const TenantsPage = () => {
                 </div>
               </td>
               <td className="px-4 py-2">
-                <button
-                  onClick={() =>
-                    router.push(`/admin/tenants/tenant/${tenant.id}`)
-                  }
-                  className="text-teal-600 hover:underline"
-                >
-                  Editar
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditTenant(tenant)}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200"
+                    title="Editar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-teal-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.232 5.232l3.536 3.536M9 11l6.232-6.232a2 2 0 112.828 2.828L11.828 13.828a2 2 0 01-.828.414l-3.536.707.707-3.536a2 2 0 01.414-.828z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTenant(tenant)}
+                    disabled={tenant?.memberships?.length !== 0}
+                    className={`flex items-center justify-center w-8 h-8 rounded-full bg-red-100 hover:bg-red-200 ${
+                      tenant?.memberships?.length !== 0
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer"
+                    }`}
+                    title="Eliminar"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-red-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -193,16 +262,25 @@ const TenantsPage = () => {
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <div className="pb-2">
-              <h3 className="text-sm font-medium">Usuarios Totales</h3>
+              <h3 className="text-sm font-medium">Tenants Inactivos</h3>
             </div>
             <div>
               <div className="text-2xl font-bold">
-                {tenants.reduce(
-                  (total, tenant) => total + tenant.users.length,
-                  0
-                )}
+                {
+                  tenants.filter((tenant) => tenant.status === "inactive")
+                    .length
+                }
               </div>
-              <p className="text-xs text-gray-500">usuarios en total</p>
+              <p className="text-xs text-gray-500">
+                {tenants.length > 0
+                  ? `${Math.round(
+                      (tenants.filter((tenant) => tenant.status === "inactive")
+                        .length /
+                        tenants.length) *
+                        100
+                    )}% de tenants inactivos`
+                  : "No hay tenants disponibles"}
+              </p>
             </div>
           </div>
         </div>
