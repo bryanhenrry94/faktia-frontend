@@ -1,5 +1,6 @@
 export type Tenant = {
   id: string;
+  taxId: string;
   name: string;
   status: string;
   plan: string;
@@ -7,12 +8,40 @@ export type Tenant = {
   memberships: [];
   subdomain: string;
   createdAt: string;
+  legalName: string | null;
+  tradeName: string | null;
+  establishmentNumber: string | null;
+  accountingRequired: boolean | null;
+  specialTaxpayer: boolean | null;
+  largeTaxpayer: boolean | null;
+  rimpeRegimeTaxpayer: boolean | null;
+  rimpe: string | null;
+  withholdingAgent: boolean | null;
+  city: string | null;
+  phone: string | null;
+  address: string | null;
+  logo: string | null;
 };
 
 export type TenantFormInputs = {
+  id: string;
+  taxId: string;
   name: string;
   subdomain: string;
   status: string;
   plan: string;
   email: string;
+  legalName: string | null;
+  tradeName: string | null;
+  establishmentNumber: string | null;
+  accountingRequired: boolean | null;
+  specialTaxpayer: boolean | null;
+  largeTaxpayer: boolean | null;
+  rimpeRegimeTaxpayer: boolean | null;
+  rimpe: string | null;
+  withholdingAgent: boolean | null;
+  city: string | null;
+  phone: string | null;
+  address: string | null;
+  logo: string | null;
 };

@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import { UserAuth } from "@/types";
+import axios from "axios";
 
 // Nombre de la cookie donde almacenaremos el token
 const TOKEN_COOKIE_NAME =
@@ -7,6 +9,7 @@ const TOKEN_COOKIE_NAME =
 
 export function useAuthToken() {
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserAuth | null>(null);
 
   // Recupera el token desde las cookies al montar el componente
   useEffect(() => {
@@ -29,9 +32,40 @@ export function useAuthToken() {
     setToken(null); // Borrar el estado
   };
 
+  const fetchUserData = React.useCallback(async () => {
+    if (!token) {
+      return;
+    }
+
+    const protocol = window.location.protocol;
+    const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/me`;
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+
+    try {
+      const response = await axios.get(backendUrl, { headers });
+      console.log("response: ", response);
+
+      if (!response.status || response.status !== 200) {
+        throw new Error("Credenciales incorrectas");
+      }
+
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }, [token]);
+
   return {
     token,
+    user,
     setAuthToken,
+    setUser,
     removeAuthToken,
+    fetchUserData,
   };
 }

@@ -45,11 +45,11 @@ const TenantsPage = () => {
   }, []);
 
   const handleNewTenant = () => {
-    router.push("/admin/tenants/tenant");
+    router.push("/secure/tenants/tenant");
   };
 
   const handleEditTenant = (tenant: Tenant) => {
-    router.push(`/admin/tenants/tenant/${tenant.id}`);
+    router.push(`/secure/tenants/tenant/${tenant.id}`);
   };
 
   const handleDeleteTenant = async (tenant: Tenant) => {
@@ -83,6 +83,7 @@ const TenantsPage = () => {
       <table className="table-auto w-full text-sm rounded-lg">
         <thead className="bg-gray-50">
           <tr>
+            <th className="px-4 py-2 text-left">Identificación</th>
             <th className="px-4 py-2 text-left">Nombre</th>
             <th className="px-4 py-2 text-left">Subdominio</th>
             <th className="px-4 py-2 text-left">Plan</th>
@@ -95,6 +96,7 @@ const TenantsPage = () => {
         <tbody>
           {data.map((tenant) => (
             <tr key={tenant.id}>
+              <td className="px-4 py-2">{tenant.taxId}</td>
               <td className="px-4 py-2">{tenant.name}</td>
               <td className="px-4 py-2">{tenant.subdomain}</td>
               <td className="px-4 py-2">{tenant.plan}</td>

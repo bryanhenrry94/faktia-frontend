@@ -68,7 +68,7 @@ export default function TenantPage() {
       console.log("response: ", response);
 
       if (response.status === 201) {
-        router.push("/admin/users");
+        router.push("/secure/users");
       }
 
       toast.success("Usuario actualizado con éxito");

@@ -2,24 +2,46 @@ import { Membership } from "@/types/memberships";
 import React, { FC } from "react";
 import { toast } from "react-toastify"; // si usas toast
 import { useForm } from "react-hook-form";
-import { User } from "@/types";
+import { Tenant, User } from "@/types";
 import { useAxiosErrorHandler } from "@/hooks/useAxiosErrorHandler";
 import axios from "axios";
 
 type Props = {
-  subdomain: string;
+  tenantId: string;
   data: Membership[];
   refreshData: () => void;
 };
 
-const InvitacionForm: FC<Props> = ({ subdomain, data, refreshData }) => {
+const InvitacionForm: FC<Props> = ({ tenantId, data, refreshData }) => {
   const [loading, setLoading] = React.useState(false);
+  const [tenant, setTenant] = React.useState<Tenant | null>(null);
+
   const canInviteMore = data.length < 5;
 
   const handleError = useAxiosErrorHandler({
     display: "toast", // o "toast" o "console"
     toast: (msg) => toast.error(msg),
   });
+
+  React.useEffect(() => {
+    const fetchTenant = async () => {
+      try {
+        const protocol = window.location.protocol;
+        const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
+        const headers = {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        };
+
+        const response = await axios.get(backendUrl, { headers });
+        setTenant(response.data);
+      } catch (error) {
+        handleError(error);
+      }
+    };
+
+    fetchTenant();
+  }, [tenantId, handleError]);
 
   const {
     register,
@@ -40,7 +62,7 @@ const InvitacionForm: FC<Props> = ({ subdomain, data, refreshData }) => {
       const headers = {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "Tenant-Subdomain": subdomain,
+        "Tenant-Subdomain": tenant?.subdomain,
       };
 
       const response = await axios.post(backendUrl, data, { headers });

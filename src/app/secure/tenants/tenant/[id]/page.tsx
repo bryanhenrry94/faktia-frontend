@@ -1,100 +1,39 @@
 "use client";
-import { CheckIcon, CurrencyDollarIcon } from "@heroicons/react/20/solid";
+import { CurrencyDollarIcon } from "@heroicons/react/20/solid";
 import axios from "axios";
 import React from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "react-toastify"; // si usas toast
 import { useAxiosErrorHandler } from "@/hooks/useAxiosErrorHandler";
-import { Tenant, TenantFormInputs } from "@/types";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Membership } from "@/types/memberships";
 import InvitacionForm from "@/components/forms/InvitacionForm";
+import TenantForm from "@/components/forms/TenantForm";
 
 export default function TenantPage() {
   const [activeTab, setActiveTab] = React.useState("general");
-  const router = useRouter();
-  const params = useParams();
-  const [tenant, setTenant] = React.useState<Tenant | null>(null);
+  const { id }: { id: string } = useParams();
   const [memberships, setMemberships] = React.useState<Membership[]>([]);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm<TenantFormInputs>();
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
   };
 
-  const fetchTenantData = React.useCallback(
-    async (tenantId: string) => {
-      try {
-        const protocol = window.location.protocol;
-        const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${tenantId}`;
-        const response = await axios.get(backendUrl);
-
-        console.log("Tenant data: ", response.data);
-        setTenant(response.data);
-
-        setValue("name", response.data.name);
-        setValue("subdomain", response.data.subdomain);
-        setValue("email", response.data.email);
-        setValue("plan", response.data.plan);
-      } catch (error) {
-        console.error("Error fetching tenant data: ", error);
-        toast.error("Error fetching tenant data");
-      }
-    },
-    [setValue]
-  );
-
   const fetchMembershipsByTenant = React.useCallback(async () => {
     try {
       const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/memberships/tenant/${params.id}`;
+      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/memberships/tenant/${id}`;
       const response = await axios.get(backendUrl);
       setMemberships(response.data);
     } catch (error) {
       console.error("Error fetching fetchMembershipsByTenant: ", error);
       toast.error("Error al obtener los usuarios por tenant");
     }
-  }, [params.id]);
-
-  React.useEffect(() => {
-    if (!params.id) {
-      return;
-    }
-
-    if (typeof params.id === "string") {
-      fetchTenantData(params.id);
-      fetchMembershipsByTenant();
-    }
-  }, [params.id, fetchTenantData, fetchMembershipsByTenant]);
+  }, [id]);
 
   const handleError = useAxiosErrorHandler({
     display: "toast", // o "toast" o "console"
     toast: (msg) => toast.error(msg),
   });
-
-  const onSubmit = async (data: TenantFormInputs) => {
-    try {
-      const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/tenant/${params.id}`;
-
-      const response = await axios.patch(backendUrl, data);
-      console.log("response: ", response);
-
-      if (response.status === 201) {
-        router.push("/admin/tenants");
-      }
-
-      toast.success("Tenant actualizado con éxito");
-    } catch (error) {
-      handleError(error);
-    }
-  };
 
   const handleDeleteInvitation = async (membershipId: string) => {
     try {
@@ -211,153 +150,7 @@ export default function TenantPage() {
       <div id="default-tab-content">
         {activeTab === "general" && (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
-                <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                  <div className="pb-2">
-                    <h3 className="text-lg font-bold">Información General</h3>
-                    <h3 className="text-sm font-normal text-gray-500">
-                      Información básica sobre el tenant
-                    </h3>
-                  </div>
-                  <div>
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Nombre de la organización
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="name"
-                          type="name"
-                          autoComplete="name"
-                          className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                            errors.name ? "border-red-500" : "border-gray-300"
-                          }`}
-                          {...register("name", {
-                            required:
-                              "El nombre de la organización es obligatoria",
-                          })}
-                        />
-                        {errors.name && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.name.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="subdomain"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Subdominio
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="subdomain"
-                          type="subdomain"
-                          autoComplete="subdomain"
-                          className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                            errors.subdomain
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
-                          {...register("subdomain", {
-                            required: "El dominio es obligatorio",
-                          })}
-                        />
-                        {errors.subdomain && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.subdomain.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="plan"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Plan
-                      </label>
-                      <div className="mt-2">
-                        <select
-                          id="plan"
-                          className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                            errors.plan ? "border-red-500" : "border-gray-300"
-                          }`}
-                          {...register("plan", {
-                            required: "El plan es obligatorio",
-                          })}
-                        >
-                          <option value="">Selecciona un plan</option>
-                          <option value="free">Free</option>
-                          <option value="basic">Básico</option>
-                          <option value="premium">Premium</option>
-                          <option value="enterprise">Enterprise</option>
-                        </select>
-                        {errors.plan && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.plan.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                  <div className="pb-2">
-                    <h3 className="text-lg font-bold">
-                      Información de Contacto
-                    </h3>
-                    <h3 className="text-sm font-normal text-gray-500">
-                      Información de contacto del tenant
-                    </h3>
-                  </div>
-                  <div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm/6 font-medium text-gray-900"
-                      >
-                        Correo Electrónico
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                          className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-teal-600 sm:text-sm/6 ${
-                            errors.email ? "border-red-500" : "border-gray-300"
-                          }`}
-                          {...register("email", {
-                            required: "El correo electrónico es obligatorio",
-                          })}
-                        />
-                        {errors.email && (
-                          <p className="text-red-500 text-sm mt-1">
-                            {errors.email.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="inline-flex items-center rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
-                >
-                  <CheckIcon aria-hidden="true" className="mr-2 h-5 w-5" />
-                  Actualizar
-                </button>
-              </div>
-            </form>
+            <TenantForm id={id} />
           </>
         )}
         {activeTab === "users" && (
@@ -390,7 +183,7 @@ export default function TenantPage() {
               </div>
               <div className="p-4">
                 <InvitacionForm
-                  subdomain={tenant?.subdomain || ""}
+                  tenantId={id}
                   data={memberships}
                   refreshData={fetchMembershipsByTenant}
                 />

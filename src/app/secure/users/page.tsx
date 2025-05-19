@@ -44,7 +44,7 @@ const UsersPage = () => {
   }, []);
 
   const handleNewUser = () => {
-    router.push("/admin/users/user");
+    router.push("/secure/users/user");
   };
 
   const TableUsers = ({ data }: { data: User[] }) => {
@@ -107,7 +107,7 @@ const UsersPage = () => {
               </td>
               <td className="px-4 py-2">
                 <button
-                  onClick={() => router.push(`/admin/users/user/${user.id}`)}
+                  onClick={() => router.push(`/secure/users/user/${user.id}`)}
                   className="text-teal-600 hover:underline"
                 >
                   Editar

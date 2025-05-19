@@ -1,14 +1,13 @@
 "use client";
 import { useSubdomain } from "@/hooks/useSubdomain";
-import axios from "axios";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify"; // si usas toast
 import { useAxiosErrorHandler } from "@/hooks/useAxiosErrorHandler";
 import { useRouter } from "next/navigation";
-import { useAuthToken } from "@/hooks/useAuthToken";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/providers/AuthContext";
 
 interface LoginFormInputs {
   email: string;
@@ -18,7 +17,7 @@ interface LoginFormInputs {
 const LoginPage: React.FC = () => {
   const subdomain = useSubdomain();
   const router = useRouter();
-  const { setAuthToken } = useAuthToken();
+  const { login } = useAuth();
 
   const {
     register,
@@ -36,37 +35,14 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      if (!subdomain) return;
-
-      const protocol = window.location.protocol;
-      const backendUrl = `${protocol}//${process.env.NEXT_PUBLIC_API_HOST}/api/v1/auth/login`;
-
-      const headers = {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Tenant-Subdomain": subdomain,
-      };
-
-      const response = await axios.post(backendUrl, data, { headers });
-
-      if (!response.status || response.status !== 200) {
-        throw new Error("Credenciales incorrectas");
+      if (!subdomain) {
+        toast.error("Subdominio no encontrado");
+        return;
       }
 
-      console.log("response: ", response.data);
+      const isLoggin = await login(data.email, data.password, subdomain);
 
-      const { access_token } = response.data;
-
-      // Guardar el token en la cookie
-      if (access_token) {
-        setAuthToken(access_token);
-      } else {
-        console.error("No token received");
-      }
-
-      if (subdomain === "app") {
-        router.push("/admin");
-      } else {
+      if (isLoggin) {
         router.push("/secure");
       }
     } catch (error) {

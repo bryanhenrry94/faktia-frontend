@@ -52,7 +52,7 @@ export default function UserPage() {
 
       if (response.status === 201) {
         toast.success("Usuario registrado con éxito");
-        router.push(`/admin/users/user/${response.data.id}`);
+        router.push(`/secure/users/user/${response.data.id}`);
       }
     } catch (error) {
       handleError(error);

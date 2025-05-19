@@ -1,4 +1,5 @@
 "use client";
+import React, { useContext } from "react";
 import {
   Disclosure,
   DisclosureButton,
@@ -11,18 +12,13 @@ import {
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuthToken } from "@/hooks/useAuthToken";
+import { AuthContext } from "@/providers/AuthContext";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
 const navigation = [
-  { name: "Inicio", href: "/admin", current: false },
-  { name: "Tenants", href: "/admin/tenants", current: false },
-  { name: "Usuarios", href: "/admin/users", current: false },
+  { name: "Inicio", href: "/secure", current: false },
+  { name: "Configuración", href: "/secure/settings", current: false },
+  { name: "Personas", href: "/secure/persons", current: false },
+  { name: "Facturas", href: "/secure/invoices", current: false },
 ];
 const userNavigation = [
   { name: "Tu perfil", href: "#" },
@@ -33,15 +29,21 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function AdminLayout({
+export default function UserLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { removeAuthToken } = useAuthToken();
+  const authContext = useContext(AuthContext);
+
+  if (!authContext) {
+    throw new Error("AuthContext is not provided");
+  }
+
+  const { logout, user } = authContext;
 
   const handleLogout = () => {
-    removeAuthToken();
+    logout();
   };
 
   return (
@@ -61,7 +63,7 @@ export default function AdminLayout({
                       height={32}
                     />
                     <span className="text-gray-900 font-medium text-sm">
-                      <Link href="/admin">DAZZSOFT S.A.S.</Link>
+                      <Link href="/secure">{user?.tenant?.name}</Link>
                     </span>
                   </div>
                 </div>
@@ -104,7 +106,9 @@ export default function AdminLayout({
                         <span className="sr-only">Open user menu</span>
                         <Image
                           alt=""
-                          src={user.imageUrl}
+                          src={
+                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                          }
                           className="size-8 rounded-full"
                           width={32}
                           height={32}
@@ -182,7 +186,9 @@ export default function AdminLayout({
                 <div className="shrink-0">
                   <Image
                     alt=""
-                    src={user.imageUrl}
+                    src={
+                      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                    }
                     className="size-10 rounded-full"
                     width={40}
                     height={40}
@@ -190,10 +196,10 @@ export default function AdminLayout({
                 </div>
                 <div className="ml-3">
                   <div className="text-base/5 font-medium text-white">
-                    {user.name}
+                    {user?.name}
                   </div>
                   <div className="text-sm font-medium text-gray-400">
-                    {user.email}
+                    {user?.email}
                   </div>
                 </div>
                 <button

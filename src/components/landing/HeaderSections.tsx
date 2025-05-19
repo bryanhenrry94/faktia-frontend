@@ -6,7 +6,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function HeaderSections() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const CompanyName = "DAZZSOFT S.A.S.";
+  const CompanyName = "Faktia";
 
   const menus = [
     { name: "Inicio", href: "#" },
